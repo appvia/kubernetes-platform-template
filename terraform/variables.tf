@@ -1,4 +1,3 @@
-
 variable "access_entries" {
   description = "Map of access entries to add to the cluster."
   type = map(object({
@@ -19,23 +18,6 @@ variable "access_entries" {
       })
     })))
   }))
-  default = null
-}
-
-variable "sso_administrator_role" {
-  description = "The SSO administrator role ARN"
-  type        = string
-  default     = null
-}
-
-variable "revision_overrides" {
-  description = "Revision overrides permit the user to override the revision contained in cluster definition"
-  type = object({
-    ## The platform revision or branch to use
-    platform_revision = optional(string, null)
-    ## The tenant revision or branch to use
-    tenant_revision = optional(string, null)
-  })
   default = null
 }
 
@@ -60,21 +42,15 @@ variable "argocd_repositories" {
   default = {}
 }
 
-variable "enable_public_access" {
-  description = "The public access to the cluster endpoint"
-  type        = bool
-  default     = true
-}
-
 variable "cluster_path" {
   description = "The name of the cluster"
   type        = string
 }
 
-variable "kubernetes_version" {
-  description = "The version of the cluster to provision"
-  type        = string
-  default     = "1.34"
+variable "enable_public_access" {
+  description = "The public access to the cluster endpoint"
+  type        = bool
+  default     = true
 }
 
 variable "hub_account_id" {
@@ -89,47 +65,16 @@ variable "hub_account_role" {
   default     = "argocd-pod-identity-hub"
 }
 
+variable "kubernetes_version" {
+  description = "The version of the cluster to provision"
+  type        = string
+  default     = "1.35"
+}
+
 variable "nat_gateway_mode" {
   description = "The NAT gateway mode"
   type        = string
   default     = "single_az"
-}
-
-variable "private_subnet_netmask" {
-  description = "The netmask for the private subnets"
-  type        = number
-  default     = 24
-}
-
-variable "public_subnet_netmask" {
-  description = "The netmask for the public subnets"
-  type        = number
-  default     = 24
-}
-
-variable "tags" {
-  description = "The tags to apply to all resources"
-  type        = map(string)
-}
-
-variable "transit_gateway_id" {
-  description = "The ID of the Transit Gateway to use, when attaching to a Transit Gateway"
-  type        = string
-  default     = null
-}
-
-variable "transit_gateway_routes" {
-  description = "The routes to add to the Transit Gateway"
-  type        = map(string)
-  default = {
-    private = "0.0.0.0/0"
-  }
-}
-
-variable "vpc_cidr" {
-  description = "The CIDR block for the VPC, if not using an existing VPC"
-  type        = string
-  default     = "10.90.0.0/16"
 }
 
 variable "pod_identity" {
@@ -162,4 +107,58 @@ variable "pod_identity" {
     })), [])
   }))
   default = {}
+}
+
+variable "private_subnet_netmask" {
+  description = "The netmask for the private subnets"
+  type        = number
+  default     = 24
+}
+
+variable "public_subnet_netmask" {
+  description = "The netmask for the public subnets"
+  type        = number
+  default     = 24
+}
+
+variable "revision_overrides" {
+  description = "Revision overrides permit the user to override the revision contained in cluster definition"
+  type = object({
+    ## The platform revision or branch to use
+    platform_revision = optional(string, null)
+    ## The tenant revision or branch to use
+    tenant_revision = optional(string, null)
+  })
+  default = null
+}
+
+variable "sso_administrator_role" {
+  description = "The SSO administrator role ARN"
+  type        = string
+  default     = null
+}
+
+variable "tags" {
+  description = "The tags to apply to all resources"
+  type        = map(string)
+}
+
+variable "transit_gateway_id" {
+  description = "The ID of the Transit Gateway to use, when attaching to a Transit Gateway"
+  type        = string
+  default     = null
+}
+
+variable "transit_gateway_routes" {
+  description = "The routes to add to the Transit Gateway"
+  type        = map(string)
+  default = {
+    private = "0.0.0.0/0"
+  }
+}
+
+variable "vpc_cidr" {
+  description = "The CIDR block for the VPC, if not using an existing VPC"
+  type        = string
+  default     = "10.90.0.0/16"
 }

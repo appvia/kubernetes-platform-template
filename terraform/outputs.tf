@@ -1,17 +1,6 @@
-
-output "eks_cluster_endpoint" {
-  description = "The endpoint of the EKS cluster"
-  value       = module.eks.cluster_endpoint
-}
-
-output "eks_cluster_certificate_authority_data" {
-  description = "The certificate authority of the EKS cluster"
-  value       = module.eks.cluster_certificate_authority_data
-}
-
-output "eks_cluster_name" {
-  description = "The name of the EKS cluster"
-  value       = module.eks.cluster_name
+output "account_id" {
+  description = "The account ID of the cluster"
+  value       = local.account_id
 }
 
 output "argocd_spoke_role_arn" {
@@ -19,12 +8,22 @@ output "argocd_spoke_role_arn" {
   value       = module.eks.cross_account_role_arn
 }
 
+output "eks_cluster_certificate_authority_data" {
+  description = "The certificate authority of the EKS cluster"
+  value       = module.eks.cluster_certificate_authority_data
+}
+
+output "eks_cluster_endpoint" {
+  description = "The endpoint of the EKS cluster"
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_name" {
+  description = "The name of the EKS cluster"
+  value       = module.eks.cluster_name
+}
+
 output "region" {
   description = "The region of the cluster"
   value       = local.region
-}
-
-output "account_id" {
-  description = "The account ID of the cluster"
-  value       = local.account_id
 }
