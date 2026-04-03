@@ -59,50 +59,48 @@ fi
 ## Parse the command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -r|--platform-revision)
+    -r | --platform-revision)
       PLATFORM_REVISION=$2
       shift 2
-    ;;
-    -p|--platform-repo)
+      ;;
+    -p | --platform-repo)
       PLATFORM_REPO=$2
       shift 2
-    ;;
-    -c|--clusters)
+      ;;
+    -c | --clusters)
       CLUSTERS_PATH=$2
       shift 2
-    ;;
-    -w|--workloads)
+      ;;
+    -w | --workloads)
       WORKLOADS_PATH=$2
       shift 2
-    ;;
-    -s|--schemas-dir)
+      ;;
+    -s | --schemas-dir)
       SCHEMAS_DIR=$2
       shift 2
-    ;;
+      ;;
     --disable-local-schemas)
       DISABLE_LOCAL_SCHEMAS=true
       shift
-    ;;
-    -h|--help)
+      ;;
+    -h | --help)
       usage
-      shift
-    ;;
+      ;;
     *)
       echo "Unknown option: $1"
       usage
-      shift
-    ;;
+      ;;
   esac
 done
 
 # We need to retrieve the schema files from the kubernetes-platform repository to validate
 # the definitions. We can either clone the repository or fetch the files directly using curl.
 download-schemas() {
-  local schemas
+  local urls
   local file_path
 
   # Ensure the schemas directory exists
-  if [[ ! -d "${SCHEMAS_DIR}" ]]; then
+  if [[ ! -d ${SCHEMAS_DIR}   ]]; then
     mkdir -p "${SCHEMAS_DIR}"
   fi
 
