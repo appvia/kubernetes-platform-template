@@ -57,6 +57,10 @@ module "eks" {
   terranetes = {
     enable = false
   }
+  ## AWS Load Balancer configuration
+  aws_load_balancer = {
+    enable = true
+  }
 }
 
 ## Provision and bootstrap the platform using an tenant repository
