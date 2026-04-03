@@ -45,6 +45,15 @@ environment:
 		terraform apply -var-file=values/${ENVIRONMENT}.tfvars; \
 	fi
 
+environment-destroy:
+	@echo "--> Destroying \"${ENVIRONMENT}\" environment"
+	@echo "--> ENVIRONMENT=(dev|prod|hub|spoke) make environment"
+	@if [ -f values/sensitive.tfvars ]; then \
+		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars -var-file=values/sensitive.tfvars; \
+	else \
+		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars; \
+	fi
+
 eks-region:
 	@$(MAKE) init >/dev/null
 	@terraform output -raw region
@@ -63,15 +72,6 @@ eks-login:
 	@echo "--> Updating kubeconfig for EKS cluster \"$(CLUSTER_NAME)\""
 	@aws eks update-kubeconfig --name "$(CLUSTER_NAME)" \
 		$(if $(AWS_REGION),--region "$(AWS_REGION)")
-
-environment-destroy:
-	@echo "--> Destroying \"${ENVIRONMENT}\" environment"
-	@echo "--> ENVIRONMENT=(dev|prod|hub|spoke) make environment"
-	@if [ -f values/sensitive.tfvars ]; then \
-		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars -var-file=values/sensitive.tfvars; \
-	else \
-		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars; \
-	fi
 
 documentation:
 	@echo "--> Generating documentation"
