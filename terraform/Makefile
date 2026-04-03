@@ -39,7 +39,11 @@ examples:
 environment:
 	@echo "--> Running \"${ENVIRONMENT}\" environment"
 	@echo "--> ENVIRONMENT=(dev|prod|hub|spoke) make environment"
-	@terraform apply -var-file=variables/${ENVIRONMENT}.tfvars -var-file=variables/appvia.tfvars
+	@if [ -f values/sensitive.tfvars ]; then \
+		terraform apply -var-file=values/${ENVIRONMENT}.tfvars -var-file=values/sensitive.tfvars; \
+	else \
+		terraform apply -var-file=values/${ENVIRONMENT}.tfvars; \
+	fi
 
 eks-region:
 	@$(MAKE) init >/dev/null
@@ -63,7 +67,11 @@ eks-login:
 environment-destroy:
 	@echo "--> Destroying \"${ENVIRONMENT}\" environment"
 	@echo "--> ENVIRONMENT=(dev|prod|hub|spoke) make environment"
-	@terraform destroy -var-file=variables/${ENVIRONMENT}.tfvars -var-file=variables/appvia.tfvars
+	@if [ -f values/sensitive.tfvars ]; then \
+		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars -var-file=values/sensitive.tfvars; \
+	else \
+		terraform destroy -var-file=values/${ENVIRONMENT}.tfvars; \
+	fi
 
 documentation:
 	@echo "--> Generating documentation"
