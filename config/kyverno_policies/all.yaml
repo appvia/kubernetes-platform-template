@@ -1,0 +1,21 @@
+---
+# Release tenant-level Kyverno policy configuration
+# Global defaults for the standalone-aws environment
+# Inherited by all clusters unless overridden at cluster level
+
+globalExclusions:
+  # Additional namespaces to exclude from policy application
+  # (in addition to kube-system, kyverno, etc.)
+  additional:
+    - kyverno-system
+    - kube-system
+
+policies:
+  restrictImageRegistries:
+    enabled: true
+    useComplexConfig: false
+    validationFailureAction: audit
+    allowedRegistries:
+      - gcr.io
+      - docker.io
+      - quay.io

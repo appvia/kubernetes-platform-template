@@ -1,0 +1,113 @@
+---
+name: Validation
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-yaml:
+    name: Validate YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install yamllint
+      - run: make lint-yaml
+
+  validate-terraform:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.14.0
+      - run: make validate-terraform
+
+  validate-terraform-lint:
+    name: Validate Terraform Lint
+
+  validate-scripts:
+    name: Validate Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        uses: reviewdog/action-shellcheck@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          path: scripts
+
+  validate-kustomize:
+    name: Validate Kustomize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+      - run: make validate-kustomize
+
+  validate-kyverno:
+    name: Validate Kyverno Policies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Kyverno CLI
+        uses: kyverno/action-install-cli@v0.2.0
+        with:
+          release: v1.13.4
+      - run: make validate-kyverno
+
+  validate-docs-spelling:
+    name: Validate Docs Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+
+  publish-docs:
+    if: github.ref == 'refs/heads/main'
+    name: Publish Docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - validate-charts
+      - validate-docs-spelling
+      - validate-helm-addons
+      - validate-kustomize
+      - validate-kyverno
+      - validate-scripts
+      - validate-yaml
+    defaults:
+      run:
+        working-directory: ./docs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - run: |
+          echo "cache_id=$(date --utc '+%V')" >> "${GITHUB_ENV}"
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - run: pip install mkdocs-material
+      - run: mkdocs gh-deploy --force
