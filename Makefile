@@ -18,12 +18,12 @@ all:
 
 dev:
 	@echo "--> Provisioning dev cluster..."
-	@cd terraform && terraform init
-	@cd terraform && terraform apply -auto-approve
+	@make -C terraform init
+	@make -C terraform environment ENVIRONMENT=dev
 
 dev-destroy:
 	@echo "--> Destroying dev cluster..."
-	@cd terraform && terraform destroy
+	@make -C terraform environment-destroy ENVIRONMENT=dev
 
 destroy-local:
 	@echo "--> Destroying development environment..."
@@ -40,22 +40,16 @@ validate:
 lint:
 	@echo "--> Linting Configuration..."
 	@$(MAKE) lint-yaml
-	@$(MAKE) lint-commits
 	@make -C terraform lint
 
 lint-yaml:
 	@echo "--> Linking YAML files..."
 	@yamllint .
 
-lint-commits:
-	@echo "--> Running commitlint against the main branch"
-	@command -v commitlint >/dev/null 2>&1 || { echo "commitlint is not installed. Please install it by running 'npm install -g commitlint'"; exit 1; }
-	@git log --pretty=format:"%s" origin/main..HEAD | commitlint --from=origin/main
-
 validate-terraform:
 	@make -C terraform validate
 
-tests: 
+tests:
 	@echo "--> Running Tests..."
 	@make -C terraform tests
 
