@@ -65,3 +65,4 @@ clean:
 	@echo "--> Cleaning up..."
 	@rm -rf terraform/.terraform
 	@rm -rf terraform/.terraform.lock.hcl
+	@kind delete cluster --name dev > /dev/null 2>&1 || true
