@@ -17,7 +17,7 @@ jobs:
     name: Validate YAML
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: pip install yamllint
       - run: make lint-yaml
 
@@ -26,7 +26,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Dependencies
         run: npm install @commitlint/config-conventional @commitlint/cli
       - name: Run Commitlint
@@ -37,7 +37,7 @@ jobs:
     name: Lint Terraform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: terraform-linters/setup-tflint@v6
         name: Setup TFLint
         with:
@@ -49,7 +49,7 @@ jobs:
     name: Validate Terraform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.14.0
@@ -59,7 +59,7 @@ jobs:
     name: Validate Scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: shellcheck
         uses: reviewdog/action-shellcheck@v1
         with:
@@ -70,7 +70,7 @@ jobs:
     name: Validate Schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: appvia/kubernetes-platform/.github/actions/validate-schemas@main
         with:
           clusters: clusters
