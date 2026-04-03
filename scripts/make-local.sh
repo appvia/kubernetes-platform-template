@@ -8,25 +8,42 @@ set -euo pipefail
 CLUSTER_NAME="dev"
 CLUSTER_TYPE="standalone"
 CREDENTIALS=false
-ARGOCD_VERSION="7.8.5"
+ARGOCD_VERSION="9.4.17"
 GITHUB_USER=""
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 GIT_COMMIT=$(git rev-parse HEAD)
 USE_GIT_COMMIT=false
+USE_REVISION=""
+
+ensure_helm_repo() {
+  local repo_name=$1
+  local repo_url=$2
+
+  echo "Ensuring Helm repository: \"${repo_name}\" is configured"
+
+  if ! helm repo list 2> /dev/null | awk '{print $1}' | grep -qx "${repo_name}"; then
+    helm repo add "${repo_name}" "${repo_url}" > /dev/null
+  fi
+
+  helm repo update "${repo_name}" > /dev/null
+}
 
 usage() {
   cat << EOF
 Usage: ${0} [options]
 
 Options:
-  -C, --credentials        Set the credentials for the platform repository (default: ${CREDENTIALS})
-  -c, --cluster NAME       Set the cluster name (default: ${CLUSTER_NAME})
-  -G, --github-user USER   Set the GitHub user (default: ${GITHUB_USER})
-  -g, --github-token PASS  Set the GitHub token (default: "GITHUB_TOKEN")
-  -h, --help               Show this help message and exit
+  -C, --credentials            Set the credentials for the platform repository (default: ${CREDENTIALS})
+  -c, --cluster NAME           Set the cluster name (default: ${CLUSTER_NAME})
+  -G, --github-user USER       Set the GitHub user (default: ${GITHUB_USER})
+  -g, --github-token TOKEN     Set the GitHub token (default: "GITHUB_TOKEN")
+  -t, --type TYPE              The type of cluster to create, i.e. hub or standalone (default: ${CLUSTER_TYPE})
+  -I, --use-git-revision       Indicate to use current git commit as the revision, instead of branch (default: ${USE_GIT_COMMIT})
+  -r, --revision REVISION      Set the revision to use for the platform repository
+  -h, --help                   Show this help message and exit
 EOF
-  if [[ ${#} -gt 0   ]]; then
-    echo "Error: ${*}"
+  if [[ ${#} -gt 0 ]]; then
+    echo -e "Error: ${*}"
     exit 1
   fi
 }
@@ -38,33 +55,49 @@ setup_cluster() {
 
   echo "Provisioning Cluster: \"${cluster_name}\", Type: \"${CLUSTER_TYPE}\""
 
-  # Create cluster
-  kind create cluster --name "${cluster_name}" 2> /dev/null
+  ## Check if the cluster already exists
+  if kind get clusters 2>&1 | grep -q "${cluster_name}"; then
+    echo "Cluster: \"${cluster_name}\" already exists"
+  else
+    # Create cluster
+    if ! error_output=$(kind create cluster --name "${cluster_name}" 2>&1); then
+      # shellcheck disable=SC2028
+      echo "Failed to provision the kind cluster: \n${error_output}"
+      exit 1
+    fi
+  fi
 
   # Check if ArgoCD deployments are already present
   if kubectl get deployments -n argocd --context "${cluster_context}" 2>&1 | grep "No resources found" > /dev/null; then
     echo "Provisioning ArgoCD on cluster: \"${cluster_name}\""
     # Create ArgoCD namespace
-    kubectl create namespace argocd --context "${cluster_context}" > /dev/null
+    kubectl get namespace argocd --context "${cluster_context}" > /dev/null 2>&1 \
+                                                                                 || kubectl create namespace argocd --context "${cluster_context}" > /dev/null
     # Install ArgoCD
-    if ! helm upgrade -n argocd --install argocd argo/argo-cd --version "${ARGOCD_VERSION}" > /dev/null; then
-      usage "Failed to install ArgoCD on cluster: \"${cluster_name}\", ensure you have the repository configured"
+    ensure_helm_repo "argo" "https://argoproj.github.io/argo-helm"
+    if ! error_output=$(helm upgrade -n argocd --install argocd argo/argo-cd --version "${ARGOCD_VERSION}" 2>&1); then
+      usage "Failed to install ArgoCD on cluster: \"${cluster_name}\", ensure you have the repository configured. \nError: $error_output"
     fi
     # Wait for ArgoCD to be ready
   fi
   echo "Waiting for ArgoCD to be ready..."
-  kubectl -n argocd wait \
-    --for=condition=Ready pods \
-    --all -l app.kubernetes.io/name=argocd-repo-server \
-    --timeout=90s \
-    --context "${cluster_context}" > /dev/null
+  # Waiting on pods can hang on re-runs if old pods are terminating but still match
+  # the label selector. Waiting on deployments is stable across upgrades/reconciles.
+  for d in argocd-repo-server argocd-server argocd-application-controller argocd-dex-server; do
+    if kubectl -n argocd get "deployment/${d}" --context "${cluster_context}" > /dev/null 2>&1; then
+      kubectl -n argocd wait \
+        --for=condition=Available "deployment/${d}" \
+        --timeout=180s \
+        --context "${cluster_context}" > /dev/null
+    fi
+  done
 }
 
 ## Used to provision the credentials for the platform repository
-setup_credentails() {
+setup_credentials() {
   local platform_repository=$1
 
-  if [[ -z ${GITHUB_TOKEN}   ]]; then
+  if [[ -z ${GITHUB_TOKEN} ]]; then
     usage "GitHub token is not set"
   fi
 
@@ -100,25 +133,30 @@ setup_bootstrap() {
   ## Check we have a repository to use
   platform_repo=$(grep "platform_repository" "${cluster_definition}" | cut -d' ' -f2)
   platform_revision=${GIT_BRANCH}
-  tenant_repository=$(grep "tenant_repository" "${cluster_definition}" | cut -d' ' -f2)
+
+  # Find the tenant repository and revision from the cluster definition,
+  # if they are not set, default to the platform repository and revision
+  tenant_repo=$(grep "tenant_repository" "${cluster_definition}" | cut -d' ' -f2)
   tenant_revision=$(grep "tenant_revision" "${cluster_definition}" | cut -d' ' -f2)
 
   ## If we are using the git commit, use that instead of the branch
   if [[ ${USE_GIT_COMMIT} == "true" ]]; then
-    platform_revision=${GIT_COMMIT}
+    tenant_revision=${GIT_COMMIT}
+  elif [[ -n ${USE_REVISION} ]]; then
+    tenant_revision=${USE_REVISION}
   fi
 
-  echo "Using repository: \"${platform_repo}\""
-  echo "Using revision: \"${platform_revision}\""
+  echo "Using Tenent: \"${tenant_repo}\" (${tenant_revision})"
+  echo "Using Platform \"${platform_repo}\" (${platform_revision})"
 
   ## Check we have a repository
-  if [[ -z ${platform_repo}   ]]; then
+  if [[ -z ${platform_repo} ]]; then
     usage "Invalid cluster definition for \"${CLUSTER_NAME}\""
   fi
 
   ## Check if we need to provision the repository secret
   if [[ ${CREDENTIALS} == "true"   ]]; then
-    if ! setup_credentails "${platform_repo}"; then
+    if ! setup_credentials "${platform_repo}"; then
       usage "Failed to setup credentials for \"${CLUSTER_NAME}\""
     fi
   fi
@@ -146,7 +184,7 @@ spec:
           patch: |
             - op: replace
               path: /spec/generators/0/git/repoURL
-              value: ${tenant_repository}
+              value: ${tenant_repo}
             - op: replace
               path: /spec/generators/0/git/revision
               value: ${tenant_revision}
@@ -154,11 +192,8 @@ spec:
               path: /spec/generators/0/git/files/0/path
               value: ${cluster_definition}
             - op: replace
-              path: /spec/generators/0/git/values/override_platform
-              value: ${platform_revision}
-            - op: replace
               path: /spec/generators/0/git/values/override_tenant
-              value: ${platform_revision}
+              value: ${tenant_revision}
 
   ## The destination to deploy the resources
   destination:
@@ -184,7 +219,7 @@ EOF
 }
 
 ## Parse the command line arguments
-while [[ ${#} -gt 0   ]]; do
+while [[ ${#} -gt 0 ]]; do
   case "${1}" in
     -h | --help)
       usage
@@ -206,13 +241,30 @@ while [[ ${#} -gt 0   ]]; do
       CREDENTIALS=true
       shift 1
       ;;
+    -I | --use-git-commit)
+      USE_GIT_COMMIT="true"
+      shift 1
+      ;;
+    -r | --use-revision)
+      USE_REVISION="${2}"
+      shift 2
+      ;;
+    -t | --cluster-type)
+      CLUSTER_TYPE="${2}"
+      shift 2
+      ;;
     *)
       shift
       ;;
   esac
 done
 
+## Check cluster type is hub or standalone
+if [[ ${CLUSTER_TYPE} != "hub" && ${CLUSTER_TYPE} != "standalone" ]]; then
+  usage "Invalid cluster type: \"${CLUSTER_TYPE}\", must be 'hub' or 'standalone'"
+fi
+
 ## Step: Provision the cluster
-setup_cluster "${CLUSTER_NAME}"   || usage "Failed to setup cluster"
+setup_cluster "${CLUSTER_NAME}" || usage "Failed to setup cluster"
 ## Step: bootstrap the platform
 setup_bootstrap "${CLUSTER_NAME}" || usage "Failed to setup the bootstrap application"
