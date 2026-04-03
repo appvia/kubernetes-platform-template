@@ -1,3 +1,4 @@
+---
 kustomize:
   # Point kustomize to an external repository
   repository: https://github.com/gambol99/custom-kustomize.git

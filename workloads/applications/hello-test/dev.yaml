@@ -1,3 +1,4 @@
+---
 helm:
   repository: https://helm.github.io/examples
   chart: hello-world
