@@ -60,7 +60,7 @@ eks-login:
 	@aws eks update-kubeconfig --name "$(CLUSTER_NAME)" \
 		$(if $(AWS_REGION),--region "$(AWS_REGION)")
 
-destroy-environment:
+environment-destroy:
 	@echo "--> Destroying \"${ENVIRONMENT}\" environment"
 	@echo "--> ENVIRONMENT=(dev|prod|hub|spoke) make environment"
 	@terraform destroy -var-file=variables/${ENVIRONMENT}.tfvars -var-file=variables/appvia.tfvars
@@ -138,7 +138,6 @@ validate:
 	@terraform validate
 	$(MAKE) validate-modules
 	$(MAKE) validate-examples
-	$(MAKE) validate-commits
 
 validate-modules:
 	@echo "--> Running terraform validate on modules"
@@ -155,11 +154,6 @@ validate-examples:
 		terraform -chdir=$$dir init -backend=false; \
 		terraform -chdir=$$dir validate; \
 	done;
-
-validate-commits:
-	@echo "--> Running commitlint against the main branch"
-	@command -v commitlint >/dev/null 2>&1 || { echo "commitlint is not installed. Please install it by running 'npm install -g commitlint'"; exit 1; }
-	@git log --pretty=format:"%s" origin/main..HEAD | commitlint --from=origin/main
 
 lint:
 	@echo "--> Running tflint"
