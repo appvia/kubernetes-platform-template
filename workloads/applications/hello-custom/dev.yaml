@@ -4,3 +4,5 @@ kustomize:
   repository: https://github.com/gambol99/custom-kustomize.git
   # Set the revision to use for the grn environment
   revision: grn
+  # The path to the kustomize overlay to use for the application
+  path: overlays/release

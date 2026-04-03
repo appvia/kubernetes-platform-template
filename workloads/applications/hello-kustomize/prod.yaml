@@ -1,4 +1,4 @@
 ---
 kustomize:
-  # Set the revision to use for the yel environment
-  revision: git+sha1
+  # The path to the kustomize overlay to use for the application
+  path: overlays/base

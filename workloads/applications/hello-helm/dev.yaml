@@ -8,8 +8,6 @@ sync:
   ## The order in which to deploy the application
   phase: primary
   ## The duration to wait before retrying the application
-  backoff_duration: 60s
+  duration: 60s
   ## The maximum duration to wait before retrying the application
-  backoff_max_duration: 2m
-  ## The sync policy to use for the application
-  application_sync: create-delete
+  max_duration: 2m

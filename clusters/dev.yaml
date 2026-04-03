@@ -7,11 +7,11 @@ cloud_vendor: aws
 environment: dev
 ## The repository containing the tenant configuration
 ## (THE LOCATION OF THIS REPOSITORY)
-tenant_repository: https://github.com/appvia/kubernetes-platform-template
+tenant_repository: https://github.com/appvia/kubernetes-platform-template.git
 ## The revision to use for the tenant repository (SHOULD ALWAYS BE SET TO HEAD)
 tenant_revision: main
 ## The path inside the tenant repository to use for the tenant cluster
-tenant_path: ""
+tenant_path: "."
 ## The cost center to use for the tenant cluster
 tenant_cost_center: "123456"
 ## The repository containing the platform configuration
