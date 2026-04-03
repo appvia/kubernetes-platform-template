@@ -70,6 +70,7 @@ jobs:
     name: Validate Schema
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: appvia/kubernetes-platform/.github/actions/validate-schemas@main
         with:
           clusters: clusters
