@@ -35,12 +35,12 @@ format:
 
 validate:
 	@echo "--> Validating Configuration..."
-	@$(MAKE) validate-cluster-definitions
+	@$(MAKE) validate-schemas
 	@$(MAKE) validate-terraform
 
-validate-clusters:
-	@echo "--> Validating Cluster Definitions..."
-	@scripts/validate-clusters.sh
+validate-schemas:
+	@echo "--> Validating Definitions..."
+	@scripts/validate-schema.sh
 
 validate-terraform:
 	@echo "--> Validating GitHub Actions..."
