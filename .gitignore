@@ -45,3 +45,6 @@ terraform.rc
 
 # Ignroe lock files
 .terraform.lock.hcl
+
+# Validation schema files
+schemas/*
