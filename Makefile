@@ -35,19 +35,39 @@ format:
 
 validate:
 	@echo "--> Validating Configuration..."
+	@$(MAKE) validate-cluster-definitions
+	@$(MAKE) validate-terraform
+
+validate-clusters:
+	@echo "--> Validating Cluster Definitions..."
+	@scripts/validate-clusters.sh
+
+validate-terraform:
+	@echo "--> Validating GitHub Actions..."
 	@make -C terraform validate
 
 lint:
 	@echo "--> Linting Configuration..."
 	@$(MAKE) lint-yaml
-	@make -C terraform lint
+	@$(MAKE) lint-actions
+	@$(MAKE) lint-terraform
 
 lint-yaml:
 	@echo "--> Linking YAML files..."
 	@yamllint .
 
-validate-terraform:
-	@make -C terraform validate
+lint-actions:
+	@echo "--> Linting GitHub Actions..."
+	@if command -v actionlint > /dev/null 2>&1; then \
+		actionlint -no-color; \
+	else \
+		echo "actionline is not installed. Please install it to lint YAML files."; \
+		exit 1; \
+	fi
+
+lint-terraform:
+	@echo "--> Linting Terraform files..."
+	@make -C terraform lint
 
 tests:
 	@echo "--> Running Tests..."
