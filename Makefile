@@ -35,12 +35,7 @@ format:
 
 validate:
 	@echo "--> Validating Configuration..."
-	@$(MAKE) validate-schemas
 	@$(MAKE) validate-terraform
-
-validate-schemas:
-	@echo "--> Validating Definitions..."
-	@scripts/validate-schema.sh
 
 validate-terraform:
 	@echo "--> Validating GitHub Actions..."
@@ -51,10 +46,15 @@ lint:
 	@$(MAKE) lint-yaml
 	@$(MAKE) lint-actions
 	@$(MAKE) lint-terraform
+	@$(MAKE) lint-schemas
 
 lint-yaml:
 	@echo "--> Linking YAML files..."
 	@yamllint .
+
+lint-schemas:
+	@echo "--> Validating Definitions..."
+	@scripts/validate-schema.sh
 
 lint-actions:
 	@echo "--> Linting GitHub Actions..."
