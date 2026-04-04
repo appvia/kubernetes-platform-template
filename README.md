@@ -284,6 +284,32 @@ clusters/dev.yaml (cluster definition)
 
 ---
 
+## CI and release promotion
+
+The [Validation workflow](.github/workflows/ci.yml) runs on pushes and pull requests to `main`. One of those jobs, **Validate Promotion** (`validate-promotion`), uses the [kubernetes-platform-promotion](https://github.com/appvia/appvia-cicd-workflows/blob/main/.github/actions/kubernetes-platform-promotion/README.md) composite action from [appvia-cicd-workflows](https://github.com/appvia/appvia-cicd-workflows).
+
+### What `validate-promotion` enforces
+
+For Helm workloads under `workloads/applications`, each environment file (for example `dev.yaml`, `staging.yaml`, `prod.yaml`) carries a `helm.version`. The action walks the configured **promotion order** and, for each changed env file, compares its version to the **nearest existing predecessor** environment in that order.
+
+**Rule:** the changed environment’s version must **not be greater than** its predecessor’s version (`helm.version`). So with dev → staging → prod (or the full chain in CI), **production cannot declare a higher chart version than staging**, and **staging cannot be higher than dev**—unless you update the predecessor first (typically in the same pull request). A downstream env may still be **lower** than upstream while a promotion is in progress; the check blocks **skipping ahead** (for example landing `prod.yaml` at `2.0.0` while `staging.yaml` is still `1.0.0`).
+
+Kustomize-only env files are skipped; Helm workloads without a valid semver can fail the check. See the action README for rules, edge cases, and the `promotion/skip-validation` label escape hatch for hotfixes.
+
+This template sets `promotion-order` to `dev,qa,uat,staging,prod` in CI; adjust it in `.github/workflows/ci.yml` if your environments differ.
+
+### Repository setup (recommended)
+
+To make this meaningful in day-to-day merges:
+
+1. **Branch protection on `main`** — Require pull requests before merging; do not allow direct pushes that bypass review.
+2. **Required status checks** — Require the Validation workflow jobs to pass before merge, including **Validate Promotion** and the other checks (YAML, Terraform validate/lint, scripts, schema, and on PRs **Validate Commitlint**). In GitHub: **Settings → Branches → Branch protection rules → Require status checks to pass** — select each job name as it appears on pull requests (for example **Validate Promotion**, **Validate YAML**, **Lint Terraform**, **Validate Terraform**, **Validate Scripts**, **Validate Schema**, **Validate Commitlint**).
+3. **Multiple reviewers** — Require **at least two approvals** (or your org’s equivalent) before merge so promotions are reviewed by more than one person.
+
+Full input/output reference and examples: [kubernetes-platform-promotion action README](https://github.com/appvia/appvia-cicd-workflows/blob/main/.github/actions/kubernetes-platform-promotion/README.md).
+
+---
+
 ## Further Reading
 
 - [Cluster Definitions](clusters/README.md) — Details on cluster YAML files

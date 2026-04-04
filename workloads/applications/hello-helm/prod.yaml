@@ -1,0 +1,13 @@
+---
+helm:
+  repository: https://helm.github.io/examples
+  chart: hello-world
+  version: "0.1.0"
+
+sync:
+  ## The order in which to deploy the application
+  phase: primary
+  ## The duration to wait before retrying the application
+  duration: 60s
+  ## The maximum duration to wait before retrying the application
+  max_duration: 2m
