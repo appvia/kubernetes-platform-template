@@ -4,9 +4,16 @@ name: Validation
 # yamllint disable-line rule:truthy
 on:
   push:
+    branches:
+      - main
+    paths-ignore:
+      - ".github/**"
+      - "README.md"
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - ".github/**"
 
 permissions:
   contents: read
