@@ -33,7 +33,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Validate Promotion
-        uses: ./.github/actions/kubernetes-platform-promotion
+        uses: appvia/appvia-cicd-workflows/.github/actions/kubernetes-platform-promotion@main
         with:
           cicd-branch: main
           cicd-repository: appvia/appvia-cicd-workflows
@@ -55,11 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Install Dependencies
         run: npm install @commitlint/config-conventional @commitlint/cli
       - name: Run Commitlint
         id: commitlint
-        run: npx commitlint --config commitlint.config.js --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+        run: git log --pretty=format:"%s" origin/${{ github.event.pull_request.base.ref }}..HEAD | npx commitlint --from=origin/${{ github.event.pull_request.base.ref }}
 
   validate-terraform-lint:
     name: Lint Terraform
