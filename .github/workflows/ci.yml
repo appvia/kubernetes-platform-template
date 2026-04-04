@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   validate-promotion:
-    name: Validate Promotion
+    name: Validate Promotion (Applications)
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'promotion/skip-validation') }}
     steps:
@@ -35,11 +35,27 @@ jobs:
       - name: Validate Promotion
         uses: appvia/appvia-cicd-workflows/.github/actions/kubernetes-platform-promotion@main
         with:
-          cicd-branch: main
-          cicd-repository: appvia/appvia-cicd-workflows
           github-token: ${{ secrets.GITHUB_TOKEN }}
           promotion-order: dev,qa,uat,staging,prod
           workloads-dir: workloads/applications
+
+  validate-system-promotion:
+    name: Validate Promotion (System)
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'promotion/skip-validation') }}
+    steps:
+      - name: Checkout PR Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Validate Promotion
+        uses: appvia/appvia-cicd-workflows/.github/actions/kubernetes-platform-promotion@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          promotion-order: dev,qa,uat,staging,prod
+          workloads-dir: workloads/system
 
   validate-yaml:
     name: Validate YAML
