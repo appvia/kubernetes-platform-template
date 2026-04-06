@@ -1,0 +1,7 @@
+---
+# Notification configuration
+notifications:
+  # Configure the notification channels. In this case, we are configuring
+  slack:
+    # Slack channel to send notifications to. This should be the name of the channel
+    channel: "#cloud-notifications"

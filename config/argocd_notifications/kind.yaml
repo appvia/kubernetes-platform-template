@@ -1,0 +1,10 @@
+---
+# Configuration for fetching the Argo CD notifications
+externalSecret:
+  # Indicates if we are using aws secrets manager to fetch the Slack OAuth token.
+  # We will have to create a secret called 'argocd-notifications-secret' manually
+  # into the argocd namespace with the following key/value:
+  #
+  # kubectl -n argocd create secret generic argocd-notifications-secret --from-literal=slack-token=${OAUTH_TOKEN}
+  #
+  enabled: false
