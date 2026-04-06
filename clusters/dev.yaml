@@ -16,8 +16,7 @@ tenant_path: "."
 tenant_cost_center: "123456"
 ## The repository containing the platform configuration
 platform_repository: https://github.com/appvia/kubernetes-platform.git
-## The revision to use for the platform repository
-## (THIS SHOULD BE SET TO THE REVISION)
+## The revision to use for the platform repository (THIS SHOULD BE SET TO THE REVISION)
 platform_revision: main
 ## The path to the kustomize overlay to use for the tenant cluster
 platform_path: overlays/release
@@ -30,7 +29,9 @@ labels:
   # Enable the aws ack iam feature
   enable_aws_ack_iam: "true"
   # Enable the aws ack eks feature
-  enable_aws_ack_eks: "true"
+  enable_aws_ack_eks: "false"
+  # Enable Argocd notifications
+  enable_argocd_notifications: "true"
   # Enable the AWS Load Balancer Controller (ALB/NLB)
   enable_aws_load_balancer: "true"
   # Enable the cost monitoring  # Enable the cert-manager feature
