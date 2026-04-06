@@ -1,0 +1,14 @@
+---
+# Configuration for fetching the Argo CD notifications
+externalSecret:
+  # The name of the secret in the secrets manager that contains OAuth token for Slack.
+  # The should be within the path /CLUSTER_NAME/global/SECRET_NAME
+  secretName: dev/global/notifications
+
+# Notification configuration
+notifications:
+  # Configure the notification channels. In this case, we are configuring
+  # Slack as the notification channel.
+  slack:
+    # The default channel to send notifications to.
+    channel: "#cloud-notifications"
