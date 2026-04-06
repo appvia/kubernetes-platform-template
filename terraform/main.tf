@@ -19,7 +19,7 @@ module "network" {
 ## Provision a EKS cluster for the hub
 module "eks" {
   source  = "appvia/eks/aws"
-  version = "1.2.16"
+  version = "1.2.18"
 
   access_entries         = local.access_entries
   cluster_name           = local.cluster_name
@@ -47,7 +47,9 @@ module "eks" {
   }
   ## External Secrets configuration
   external_secrets = {
-    enable = true
+    enable               = true
+    ssm_parameter_arns   = ["arn:aws:ssm:${local.region}:${local.account_id}:parameter/eks/*"]
+    secrets_manager_arns = ["arn:aws:secretsmanager:${local.region}:${local.account_id}:secret:*"]
   }
   ## External DNS configuration
   external_dns = {
@@ -66,7 +68,7 @@ module "eks" {
 ## Provision and bootstrap the platform using an tenant repository
 module "platform" {
   source  = "appvia/eks/aws//modules/platform"
-  version = "1.2.16"
+  version = "1.2.18"
 
   ## Name of the cluster
   cluster_name = local.cluster_name
