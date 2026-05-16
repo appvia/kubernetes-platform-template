@@ -1,0 +1,39 @@
+# VPA Helm Values — Platform Defaults
+# =====================================
+# Production-grade configuration for the Vertical Pod Autoscaler
+# Reference: https://github.com/FairwindsOps/charts/tree/master/stable/vpa
+# Reference: https://github.com/appvia/kubernetes-platform/tree/main/config/vpa
+
+# Recommender Component — core VPA logic
+# Analyzes historical container metrics (via Metrics Server) and recommends optimal CPU/memory requests
+# Runs continuously to collect metrics from all eligible pods in the cluster
+recommender:
+  enabled: true
+  # 2 replicas recommended for production: ensures availability during component updates
+  replicaCount: 2
+  # Number of old ReplicaSets to retain for rollback capability
+  revisionHistoryLimit: 10
+
+# Updater Component — applies VPA recommendations to pods
+# Mutates pod requests when updateMode is enabled (typically in 'Auto' or 'Recreate' mode)
+# In production, consider using updateMode 'Off' (recommendations only) for safety
+# and applying updates manually via gitops pipelines or scheduled maintenance windows
+updater:
+  # If true, the updater component will be deployed
+  enabled: false
+  # 2 replicas for production to avoid single point of failure during pod evictions
+  replicaCount: 2
+  # Number of old ReplicaSets to retain for rollback capability
+  revisionHistoryLimit: 10
+
+# Persistence for Admission Controller
+# Stores checkpoint snapshots of pod resource history for the recommender algorithm
+# WARNING: Do NOT use for cost visibility or chargeback — use kubecost for that
+# Checkpoints are internal implementation details of VPA; this storage is NOT a cost accounting system
+persistence:
+  # Set to false in platform defaults because checkpoints can be rebuilt from live metrics
+  # If frequently evicting recommenders, enable persistence to preserve historical data
+  enabled: false
+  # storageClassName: standard
+  # accessMode: ReadWriteOnce
+  # size: 2Gi
