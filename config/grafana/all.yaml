@@ -20,3 +20,7 @@ persistence:
   extraPvcLabels:
     app.kubernetes.io/part-of: kubernetes-platform # For backup/cost allocation
 
+# Deployment replicas for high availability
+# IMPORTANT: Minimum 3 replicas recommended for production to handle node failures
+# Each replica requires ~512Mi memory minimum. Monitor cluster capacity before increasing.
+replicas: 1
