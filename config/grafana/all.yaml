@@ -1,0 +1,22 @@
+---
+# Persistence Configuration
+# CRITICAL FOR PRODUCTION: Enables persistent storage for Grafana data, dashboards, and configuration
+# Without persistence, all data is lost on pod restart. Use PVC for database files.
+# SIZING NOTES:
+# - 50Gi is suitable for ~1000 dashboards and historical data
+# - Monitor PVC usage: kubectl get pvc -n grafana
+# - Increase size if usage >80% (add volume expansion support to storage class)
+persistence:
+  type: pvc # Use PersistentVolumeClaim (vs emptyDir)
+  enabled: true # MUST be true for production
+  storageClassName:
+    "" # Leave empty to use cluster default, or set specific class
+    # Examples: "ebs" (AWS), "pd-ssd" (GCP), "fast" (on-prem)
+  accessModes:
+    - ReadWriteOnce # Pod can write (RWO = single pod mount, not shared)
+  size: 50Gi # Initial PVC size. Monitor and increase if needed
+  finalizers:
+    - kubernetes.io/pvc-protection # Prevent accidental PVC deletion
+  extraPvcLabels:
+    app.kubernetes.io/part-of: kubernetes-platform # For backup/cost allocation
+
