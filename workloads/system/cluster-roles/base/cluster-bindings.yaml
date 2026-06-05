@@ -2,12 +2,25 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: platform-viewer
+  name: system-nodemanager
 subjects:
   - kind: Group
-    name: platform-viewer
+    name: system-nodemanager
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
-  name: platform-viewer
+  name: system-nodemanager
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system-secrets
+subjects:
+  - kind: Group
+    name: system-secrets
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system-secrets
   apiGroup: rbac.authorization.k8s.io
