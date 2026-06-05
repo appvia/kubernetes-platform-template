@@ -28,7 +28,7 @@ Once a cluster is provisioned, the cluster definition YAML files are consumed by
 │   │   └── all.yaml          # ArgoCD settings (e.g., reconciliation timeout)
 │   └── kyverno_policies/
 │       └── all.yaml          # Kyverno policy defaults (image registries, exclusions)
-├── terraform/                # Terraform infrastructure code
+├── terraform/                # Terraform infrastructure code (Example)
 │   ├── main.tf               # Core modules: network, eks, platform
 │   ├── locals.tf             # Decodes cluster YAML definitions
 │   ├── variables.tf          # Input variables
