@@ -1,0 +1,89 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system-secrets
+  labels:
+    app.kubernetes.io/name: platform-viewer
+    app.kubernetes.io/part-of: platform
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/type: kustomize
+    platform.local/type: platform
+  annotations:
+    platform.local/description: >-
+      Read-only cluster access for SSO principals across all secrete
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system-nodemanager
+  labels:
+    app.kubernetes.io/name: platform-add-nodes
+    app.kubernetes.io/part-of: platform
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/type: kustomize
+    platform.local/type: platform
+  annotations:
+    platform.local/description: >-
+      Permissions to manage worker nodes and Karpenter node pools. Bind via EKS
+      access entry kubernetes_groups containing platform-add-nodes.
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - pods
+      - pods/eviction
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/status
+      - pods/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - karpenter.sh
+    resources:
+      - nodepools
+      - nodeclaims
+      - nodeoverlays
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - karpenter.k8s.aws
+    resources:
+      - ec2nodeclasses
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
