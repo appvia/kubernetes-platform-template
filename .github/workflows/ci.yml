@@ -27,7 +27,7 @@ jobs:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'promotion/skip-validation') }}
     steps:
       - name: Checkout PR Branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
@@ -45,7 +45,7 @@ jobs:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'promotion/skip-validation') }}
     steps:
       - name: Checkout PR Branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
@@ -61,7 +61,7 @@ jobs:
     name: Validate YAML
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: pip install yamllint
       - run: make lint-yaml
 
@@ -70,7 +70,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Install Dependencies
@@ -83,7 +83,7 @@ jobs:
     name: Lint Terraform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: terraform-linters/setup-tflint@v6
         name: Setup TFLint
         with:
@@ -95,7 +95,7 @@ jobs:
     name: Validate Terraform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.14.0
@@ -105,7 +105,7 @@ jobs:
     name: Validate Scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: shellcheck
         uses: reviewdog/action-shellcheck@v1
         with:
@@ -116,7 +116,7 @@ jobs:
     name: Validate Schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: appvia/kubernetes-platform/.github/actions/validate-schemas@main
         with:
           clusters: clusters
